@@ -1,0 +1,122 @@
+t is kubectl
+•	Your new best friend 
+•	Its command line tool which allows you to speak to kubernetes cluster
+•	Most of the configuration we will do will be with kubectl
+•	What is Microk8s
+•	Canonical’s project for low weight kubernetes deployment.
+•	It’s perfect for local experimenting.
+•	It is not Kubernetes itself (it abstracts away some complicated configuration).
+•	We will be running single node setup although there is support for multi node.
+•	Microk8s provides Addons which helps to setup some complicated setups of normal Kubernetes (load balancer, ingress, dns setup, RBAC, GPU and more).
+•	Microk8s alternatives
+•	Minikube
+•	Kind (Kubernetes in docker)
+•	K3D (my favorite)
+You can use for you local development anything you want. I will continue with demos with microk8s.
+What is EKS
+•	Elastic Kubernetes service.
+•	Kubernetes as a service.
+•	You pay AWS for managing and maintaining you Kubernetes cluster.
+•	There are two options currently:
+o	Running on top of EC2 instance (this option we will use).
+o	Running on top of Fargate (fargate is a compute engine, run your app without instance).
+•	Behind the scenes EKS will create our ec2 instances create the connections between those and install kubernetes.
+•	You don’t have control of the control plane nodes 
+•	Pricing for EKS
+It depends on multiple factors but I will try to do rough estimate for EC2 with default setup in Frankfurt region
+
+AWS cli setup
+•	(Optional but recommended) create non root admin account
+•	Get AWS credentials: https://docs.aws.amazon.com/singlesignon/latest/userguide/howtogetcredentials.html
+•	Download AWS CLI 
+o	https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+•	Install EKSCTL
+•	EksCtl is command line tool for EKS (elastic kubernetes service).
+•	It allows you to manage AWS kubernetes clusters directly form you command line.
+•	Installation https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+•	Kubernetes components and concepts
+•	Kubernetes nodes
+•	Nodes are the machines which create the cluster.
+•	The upper limit of nodes is around 5000 currently (really an edge case custer).
+•	Types of nodes:
+o	Master/controlplane nodes (key Kubernetes workloads are presented here).
+o	Worker nodes (application workloads are here).
+•	Normally application workloads should not be scheduled on master nodes.
+•	Kube api server
+•	Everything in the Kubernetes is a resource (REST).
+•	Kube api is REST api which we will talk to manage our cluster.
+•	It’s like a Frontend to the cluster.
+•	Kubectl is the local client which we will use to talk to the Kube api server.
+•	Normally Kube-api runs as a pod (lets think container for now) on control plane node (it can also run as a system service through systemd).
+•	Now you need to understand that on EKS or any other managed kubernetes services the control plane is hidden. We can only see the worker nodes.
+•	Etcd (distributed key value storage)
+•	Manages configuration data and state data of objects in kubernetes.
+•	Etcd should be used only to store data related to kubernetes objects.
+•	Kube-api-server speaks directly to ETCD you don’t have to.
+•	Its located mostly on control plane nodes (notice the plural).
+•	Its super fast (benchmarked at 10 000 writes per second).
+•	Uses Raft protocol (makes it super reliable).
+•	Microk8s uses Dqlite as its database (HA Sqlite alternative).
+•	Kubelet
+•	Kubelet is the hearth of every Kubernetes node.
+•	Is the agent running there handling all the magic. 
+•	Kubeapi speaks with other nodes through kubelet.
+•	Other core components (details in later videos)
+•	Kube proxy - Responsible for load balancing traffic between workloads.
+•	Kube scheduler - Scheduling of pods.
+•	Kube dns - DNS resolution for Kubernetes objects.
+•	Kube Controller manager - Control loop monitoring state of the cluster.
+•	Kubernetes namespaces
+•	Problem
+•	Imagine having one cluster for multiple teams at work.
+•	Cluster consists of few nodes.
+•	You want seamlessly deploy both application of these teams without interference:
+o	You could create two clusters but that would be more expensive and more maintenance.
+o	You could give x nodes to team A x nodes to team B but having Kubernetes allows you to simultaneously use all resource in all teams.
+
+Kubernetes namespaces
+•	Abstraction in Kubernetes solves the aforementioned problems.
+•	The separation can be done on node level (Team A uses nodes 1, 2 and team B uses 1,3).
+•	The separation can be done on resource level (Team can use Up to 128GB or Ram from the whole pool) etc.
+•	You can operate in the context of namespace or the whole cluster.
+•	Communication with kube-api
+•	Secure communication
+•	Kube-api-server its a REST API which kubectl (client) talks to.
+•	Kubectl is written in go (just like most of the kubernetes).
+•	In order to securely talk to API we need kubeconfig
+o	Kubectl first checks if the KUBECONFIG env is set up (it has full path to the config).
+o	Kubectl first looks for config at ~/.kube/config.
+o	If none of above you can specify custom config at the kubectl command calls.
+ 
+ 
+Cluster section
+
+
+•	Specification of all available clusters for give config (you can have more cluster specified to easily switch between).
+•	Server: is the location of the kube-api (can be specified also with tls-server-name).
+•	certificate-authority-data: PEM encoded certificate authority (can be empty, then system’s CA will be used).
+•	(other):
+o	insecure-skip-tls-verify: can be set to True and then no TLS communication will be used.
+ 
+Users section
+
+
+•	User is an abstraction in Kubernetes used for Authentication (we can grant access to the cluster with them).
+•	There might be three types of authentication data provided (under user:):
+o	token: for token based authentication 
+o	username:/password
+o	client-certificate-data:/client-key-data: which contains base64 encoded contents
+ 
+Context section
+
+
+•	Cluster: reference to one of the clusters.
+•	User: reference to one of the users.
+•	Namespace (defaul: default): reference to one of the namespaces in the cluster (we may have access in the context of namespace).
+•	Other sections
+•	Kind: specifies the type of kubernetes object (every object must have type).
+•	ApiVersion: each object in kubernetes is using some api to create itself (each object may be created with different version of api). This is also mandatory field.
+•	current-context: specifies the current context we are operating in (this field has value from one of the names in context section).
+•	properties: {} -> this is an empty key (optional no needed).
+
+
