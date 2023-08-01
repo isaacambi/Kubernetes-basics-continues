@@ -1,0 +1,55 @@
+o what is kubernetes?
+•	Open source orchestrator for deploying containerized applications (developed by Google 2014).
+•	What does it really means to orchestrate?
+•	We have an app made of microservices (understand small components) like:
+o	Frontend
+o	Backend
+o	Database
+o	Cache 
+o	Etc.
+•	We have a fleet of virtual machines and we want to distribute the services to those machines
+•	Why don’t we run it all on one machine?
+•	What if the machine fails?
+•	What if the machine is not big enough or will not be big enough?
+•	What if one service needs Python 3.8 and the other needs python 3.11
+•	What if one service may have security vulnerability which will leak passwords from DB (other service).
+•	Other what ifs.
+•	Kubernetes solves
+•	How will be the services deployed?
+•	What happens if one service stops working? 
+•	How will be services communicating with each other? 
+•	How do I clone one particular service?
+•	How to separate services?
+•	How to handle accesses to the services?
+•	And many more
+•	Kubernetes immutability
+•	Just like containers also kubernetes resources, once they are created no one can change those. Only new ones can be deployed.
+•	This significantly improves the deployment problems with speed.
+•	Thanks to this CI CD tools can be used for the deployments.
+•	Kubernetes’ declarative configuration
+Imperative style 
+•	Run installation of dependencies.
+•	Run this installation script for service A.
+•	Run some other thing.
+Declarative syntax
+•	At the end of deployment I want service A to be deployed with following config.
+Self healing Kubernetes
+•	If node (the virtual machine behind) will fail. Workloads (services and configuration) will be seamlessly deployed to other nodes.
+•	If one service health checks will start to fail, the service will be restarted.
+•	If one service will stop responding, its copy will be created.
+•	Separation of concerns
+•	Each piece in Kubernetes abstraction is independent.
+•	Everything is connected through load balancers
+•	You can anytime take the cluster and move it somewhere else:
+o	AWS
+o	Azure
+o	GCP
+o	Self hosted cluster on Premise 
+o	Arduino Cluster 
+•	Scalability
+•	It is so easy to scale the service in the cluster up and down manually and automatically as you wish.
+•	It is also possible to scale the nodes in the cluster as you need 
+
+
+
+
