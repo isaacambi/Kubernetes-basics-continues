@@ -1,0 +1,85 @@
+$
+yment
+Problem
+•	Imagine you are running a massive ReplicaSet in your cluster with tens of pods and millions of users.
+•	Each pod is running version 1 of your application.
+•	Now you want to upgrade to version 2 seamlessly without customers noticing .
+•	How do you handle this?
+•	What if the new version fails? 
+•	How do you rollback? 
+•	Deployment
+•	Is a wrapper around ReplicaSet.
+•	It helps with deployments.
+•	We can specify strategy which will be used during update. 
+•	We can simply rollout to previous version of deployment.
+Update strategy
+•	Strategy specifies how to update the ReplicaSet.
+•	Recreate: shuts down all pods and starts new with new version (downtime of application).
+•	Rolling update: gradually changes the versions of pods:
+o	MaxUnavailable: how many of pods will be updated at the same time (can be number or percentage).
+o	MaxSurge: How many new extra pods will be created during update.
+•	MaxUavailable 25%
+•	pod1: version1
+•	
+•	pod1: version1
+•	
+•	pod1: version1
+•	
+•	pod1: version1
+Be careful
+•	By running Rolling Updates at certain point in time there are two versions of the same application available in the cluster.
+•	Traffic in the cluster is split across pods so there is a chance some customers may get old version while others the new one.
+•	Other service talking to this app must be able to speak with the app in both versions!!!
+Rollbacks
+Motivation
+•	Sometimes (a lot of times) things go wrong.
+•	Kubernetes has a way to undo the changes for given deployment.
+•	Rollback is the mechanism.
+•	How it works?
+•	Everytime we do some change with deployment Kubernetes stores the historical manifest in the same object.
+•	This history is stored in annotations field.
+•	Kubectl
+•	Command for handling rollobacks is called rollout.
+Kubectl history rollout
+Scaling in Kubernetes
+Vertical scaling
+•	Adding power by getting bigger VMS.
+o	From 8GB of RAM to 32GB or ram.
+•	Very expensive.
+•	Its possible in Kubernetes by adding bigger node and removing old one or by increasing resource limits on Pod.
+•	Horizontal scaling
+•	We increase the power by adding new nodes.
+•	We add new pods (copies of the same pod).
+•	Can be achieved in distributed system.
+•	Horizontal Pod Autoscaler (HPA)
+•	Kubernetes allows us to specify Autoscaling policies with HPA.
+•	Those policies will be applied to increase/decrease the number of pods for given deployment. e.g:
+o	Having CPU utilisation in given pod above 50% spawn another pod.
+•	HPA specification
+•	We can specify min number of pods for target.
+•	Max number of pods.
+•	This metrics will spawn new pod if average cpu utilisation across pods is above 50%
+ConfigMaps
+Motivation
+•	Sometimes apps in the kubernetes need some configuration to be presented. 
+•	This config is mostly presented as environment variable or file.
+•	Remember that the pods are copies which does not persist between restarts but configmaps do.
+•	ConfigMaps are stored in etcd but you should not put state into them!!
+•	Their purpose is to keep configuration of application.
+•	Creation
+•	Just like everything you can use imperative or declarative syntax.
+•	Configmaps can be created from literals (inline definition of name and value) or files.
+Kubectl create cm test -cm –from-literal name=Ambi
+How to use configmap
+•	Having configmap created we can use it in pods in different ways:
+o	Mount all values from configmap as environment values in pods.
+o	Mount some values from configmap as environment value in pods.
+o	Mount configmap entries as volume files.
+•	What is a volume?
+•	It represents a directory which is presented for one or many containers of the pod.
+•	Volume can outlive the container.
+o	If there is a container restart data store on volume can be persisted.
+•	Depending on the volume type it may or may not be persistent (stored)
+•	In this video we talk about ConfigMap based volumes, from which we can just read data and not persist anything  in them
+
+
