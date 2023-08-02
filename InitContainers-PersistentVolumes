@@ -1,0 +1,78 @@
+r InitContainer
+First talk about init containers
+•	InitContainers are jobs which must be successfully executed before the app container is started.
+•	Init containers have the same spec as normal app containers.
+•	We put them instead of .spec.containes into .spec.initContainers
+•	We use the initContainers for some pre application setup.
+o	Creating tables.
+o	Handling security related stuff.
+o	Delaying main app.
+•	Django and initContainers
+•	We will use initContainers to create tables for our main application.
+o	We will run python manage.py migrate which creates tables.
+•	The init container will run the same image.
+•	In this demo we use sqlite which creates the tables in files in the filesystem.
+o	This means we need to share location between these containers. 
+o	Because the fs for initContainer disappears after container is done. 
+•	Empty dir volume
+•	It’s created when pod is created and its deleted when pod is deleted.
+•	It’s just a scratch space.
+•	Medium field:
+o	By default it is using the storage of the node.
+o	“Memory” will use tmpfs (RAM based volume).
+•	HostPath
+•	Motivation
+•	Sometimes we want to persist data between pods or pod restarts.
+•	We showed something like this when we were mounting contigmap or secret as a volume.
+•	Today we talk about hostpath.
+HostPath
+•	It’s a volume type where location on the node is used as volume in pod.
+•	There are a lots of caveats we need to know
+o	Data is available per node so you can share the data across pods only if they are scheduled on the same node.
+o	Data is not synced across nodes.
+o	It’s really insecure to use (as the app may cause problems to nodes filesystem).
+o	There are options which can create provided directory if it does not exist.
+StorageClass in Kubernetes
+Persistent volumes
+•	Persistent Volume is an abstraction in Kubernetes which helps to integrate Kubernetes cluster with storage offerings.
+•	There are various storage offerings in each public cloud.
+•	What is CSI container storage interface
+•	It’s a specification which defines how a block and file storage should be connected to containers (e.g. inside pods).
+•	Thanks to this we can just plug storage offerings from different vendors into Kubernetes cluster.
+•	How does it work?
+•	In order to use persistent network storage we need a provider for that. 
+•	Than we register the providers CSI driver to our cluster (most of the time this will create object called storage class).
+•	Now everytime we will need some volume we will create Kubernetes object called persistent volume (this will take the storage class and will create the volume for us with specified size and access policies).
+•	Now we can claim the volume with another object Persistent Volume Claim
+•	After this we can mount the volume to a pod.
+•	Benefits
+•	The idea is that the cluster administrator will setup the CSI plugin for specific storage provisioner your company will use.
+•	After that application developer or DevOps guy does not care about the underlying implementation of the csi. They just use StorageClas to create  PVs and PVCs in their apps.
+•	Using storage classes in cluster is example of Dynamic provisioning of volumes (otherwise the cluster admin would have to everytime create the volumes).
+•	Persistent Volume
+•	It’s a link between Kubernetes cluster and storage provisioner.
+Persistent volume claim
+•	Its link between PV and Pod (as pods are ephemeral). One to one relationship with PV.
+PV AccessModes
+ 
+ReadWriteOnce	PV is mounted on single node (can be used by multiple pods on single node)
+ReadOnlyMany	PV can be mounted on multiple nodes and their pods but just for reading
+ReadWriteMany	PV can be mounted on multiple nodes and their pods for reads and writes
+ReadWriteOncePod	PV can be mounted only to single pod (new feature 1.22+)
+
+Some storage provisioners 
+ 
+Provisioner	RWO	ROX	RWX	RWOP
+AWSElasticBlockStore	x	-	-	-
+AzureFile	x	x	x	-
+AzureDisk	x	-	-	-
+GCEPersistentDisk	x	x	-	-
+microk8s-hostpath	x	-	-	-
+
+StorageClass reclaimPolicy
+•	Specifies what will happen if the PV will be reclaimed:
+o	Retain: volume and data is kept.
+o	Delete: volume data is deleted at pods end.
+o	Recycle: volume is scrubbed (this is still supported only by hostpath and NFS provisioner).
+
+
