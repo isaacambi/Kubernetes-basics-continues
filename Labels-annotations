@@ -1,0 +1,56 @@
+bels and annotations
+Labels
+•	Kubernetes is designed to organize large scale distributed systems with hundreds of components.
+•	We need to organize multiple teams with different apps.
+Labels is a metadata field used for grouping objects.
+Rules
+•	Labels is a list of key: value pairs.
+•	Key 
+o	Can be in a form of prefix/name (prefix/ is optional)
+o	Prefix must be valid DNS subdomain with 253 chars (can have dots)
+o	Label 63 chars for name part
+	Alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.)
+•	Where can we use labels?
+•	Labels can be part of any Kubernetes resource. 
+•	We can apply labels to already running resources imperatively.
+o	This is not recommended as we might forget to update the manifest.
+•	We can also apply labels to nodes (this is very common).
+Label selectors
+ 
+key=value	where key has value
+key!=value	where key does not have value
+key in (value1, value2)	where key has value from group
+key notin (value1, value2)	where key has not value from group
+key	where key has some value
+!key	where key does not have value
+
+Annotations
+•	Is a list of key: value pairs.
+•	For non identifying information.
+o	Data which is not used for grouping.
+•	It’s used for some extra application data (e.g. gui values).
+•	It’s important for keeping track of historical changes !!!
+•	We will be talking more about annotations in rollbacks video.
+•	ReplicaSets
+•	High availability
+•	Highly available application is application which can face disruptions on node level or application level. e.g.:
+o	One of the nodes is down but the app is scheduled also on other nodes.
+o	One of the pods is having problems but the app has still some replica.
+•	Kubernetes allows HA applications.
+Concept stateless pods
+•	Having an application (e.g. backend API) we will create copies of the same pod called replicas.
+•	These pods will be created from same template but will be unique Kubernetes objects.
+•	Pods won’t have state (it does not matter in which order they are created or how many of them there are, they all behave the same).
+•	ReplicaSet
+•	Replica set is Kubernetes object responsible for managing group of pods.
+•	Pods belonging to given replicaSet are specified by label selector.
+•	Replica set does not own pods. It just refers to those with labels. Pods are independent piece.
+•	We will talk how i load distributed across these pods in later videos.
+Reconciliation loop
+1.	We submit the manifest which will be received by api server and will be written to etcd.
+2.	Kubernetes checks if the number of pods specified in replica set is presented in cluster.
+3.	If not It will schedule missing pods or delete extra pods based on the pod template and labels.
+4.	This loop runs endlessly.
+
+
+
