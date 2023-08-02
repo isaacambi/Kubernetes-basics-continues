@@ -1,0 +1,145 @@
+$
+ying Django App
+Plan
+•	Deploy singleton database to the cluster (Postgresql) with persistent data.
+•	Deploy Django and connect it to the database.
+•	StatefulSets
+•	Original design
+•	So far we were talking about stateless design. 
+•	Although some of the state was kept in DB for our last example most of the examples were stateless.
+o	Pods were copies and did not have to know about each other.
+o	Order of Pods startup did not matter.
+•	That's why we have StatefulSets.
+•	StatefulSet
+•	On first glance they look identical to replicasets but; 
+•	Each pod in Statefulset is unique (e.g. they got unique host names indexed from 1).
+o	This identifier is kept during scheduling.
+•	Replicas are created in given order (by the index) and if previous replica fails all the following will wait for restart.
+•	On scale down the reverse index order is taken.
+•	With stateful sets we can create dedicated volumes for each pod in the set.
+•	Gochas
+•	PVs needs to be precreated or auto provisioned by the storage provider 
+•	PVs are not deleted on pod’s deletion
+•	To expose this Statefullset a Headless service needs to be manually created 
+•	Deletion does not guarantees the ordered removal of pods
+•	Headless service
+•	In Statefull sets we don’t want to load balance traffic between pods, we want to sent traffic directly to specific pods (distinguished by the hostname of pod).
+•	We create Headless services for this use case
+o	Set the ClusterIp section to None. 
+o	You can refer to pod with hostname.service.
+•	Kubernetes Authentication
+Core concept
+•	Each request to kube-api is connect with identity (there are even anonymous requests).
+•	Authentication is response to question Who am I?
+•	Kubernetes provides two kinds of objects for authentication.
+o	Service accounts (handled by Kubernetes itself).
+o	User accounts (this needs to be managed by something else than Kubernetes).
+•	There are multiple authentication methods available: 
+o	Bearer token (mostly for service accounts)
+o	Certificates 
+o	Proxy authentication
+•	Service accounts
+•	Are bound to a namespace.
+•	Are created automatically or manually.
+•	Each pod in the cluster has mounted service account which allows him to talk to kubernetes api (this kind of credentials are stored in namespace as configmap).
+o	You can specify custom serviceaccount for pod with .spec.serviceAccountName.
+•	Using service account outside cluster
+•	Service account bearer tokens are perfectly valid to use outside the cluster and can be used to create identities for long standing jobs that wish to talk to the Kubernetes API.
+•	You can create them with kubectl create sa <name>.
+•	And then you can create token for it kubectl create token <sa-name>.
+•	The identity
+•	Kubernetes tries to extract this from identity.
+o	username
+o	UID - unique ide
+o	groups - user can belong to one or more groups
+•	If we use certificate based authentication these data is included in certificate.
+•	User accounts
+•	In order to “create a new user” in the cluster we need to create private-key (for the new user) and certificate sign request which needs to be approved by the cluster (signed).
+•	Its outside of scope for common developers.
+•	Kubernetes Authorization
+•	Motivation
+•	With authorisation we answer the question Can I do this? 
+o	Can I list pods in this namespace as user X?
+o	Can I create a pod in this namespace as user Y?
+RBAC - Role based access control
+•	Its Authorization mechanism in Kubernetes.
+•	It’s not enabled by default (although it is in EKS) by design.
+•	It's based on set of Roles and RoleBindings.
+o	Role is a set of permissions for K8s resources within particular namespace.
+o	RoleBinsing is mapping of role to particular user/group of users.
+•	ClusterRole ClusterRoleBinding
+•	Some resources are namespaced:
+o	pods, deployments, configmaps …
+•	But some resources are not namespaced:
+o	namespaces, users, csrs …
+•	Cluster Roles are dedicated for non namespaced resources.
+CKAD: Blue Green deployment
+Motivation
+•	Application is running in production with version 1 
+•	We want to deploy a new version of application version 2
+o	The rollout deployment will cause that some of the pods serving the app may be in two different versions at the same time. This can be problematic for some kind of applications.
+o	E.g. the database may have problem with some breaking changes or other components.
+•	Blue Green Deployment
+•	The Idea is that at a time we will run only one version of the application (either blue or green), while the other version (blue or green) is preparing in the background (e.g. deploying).
+•	After the new version of the application is prepared the traffic will be directly switched to that version.
+Pros
+•	It’s always 1 version of the publicly accessible application.
+•	Simple rollback (just point the traffic to the old version).
+•	You can do testing in production environment before changing the traffic.
+•	0 downtime.
+•	Cons
+•	You need extra resources for second deployment to be presented.
+•	Second deployment is in production environment (How will the database behave …)
+•	Maintenance issues.
+Realisation 1
+•	You can specify maxSurge on deploymentStrategy to 100%.
+•	This will create the same amount of extra pods for the second version of the application.
+o	This approach expects flawless probes to spot problem before switching to the new version.
+•	Realisation 2
+•	You deploy second deployment with different labels for the new version.
+•	Now after the second version is ready you change the selector of the loadBalncer for the service handling the production traffic.
+•	CKAD: Canary deployment
+•	Idea
+•	The best way to test new version of the app is by putting it to production. 
+•	Canary deployment deploys the new version of the app to production but it shifts just percentage of public traffic to the newest version.
+•	Idea is to disrupt smaller amount of customers before going 100% live.
+•	Pros
+•	Canary deployment is tested on real production data before affecting 100% of customers.
+•	It’s easy to roll back
+•	0 downtime
+•	Cons
+•	The traffic handling can be problematic.
+•	Application and other microservices need to be ready to speak with 2 versions of the same application.
+•	Realisation
+•	In production most of the time service meshes are used (those are outside of the scope of this course and CKAD)
+•	You can achieve cannary with 2 deployments and two ingress rules.
+•	Rules will be the same but most of the time ingress controllers support annotation which specifies what size of traffic should go to canary deployment.
+•	CKAD jsonpath
+•	Motivation
+•	Sometimes we want to access some specific field in the kubernetes object. 
+•	For example we want to automate something or we want to edit something with scripts
+What is JSONPath?
+•	It is a query language for JSON 
+•	Is an alternative to XPath in XML
+•	We can get specific fields in json
+Kubectl get pods -o =jasonpth=’{@}’
+JSONPath basic functions
+ 
+@	This object	'{@}'
+.	Access field	'{.spec}'
+..	Parent	..field
+*	Wildcard for all objects	.containers[*]
+[start:end:step]	Slice index	container[0:2:1]
+container[0]
+
+JSONPath basic functions
+ 
+?()	Condition	‘{.containers[?(@.name=="target")].image}’
+range, end	Iterator	'{range .containers[*]}[{name}, {.image}] {end}'
+
+CKAD custom columns
+Custom columns
+•	Sometimes is useful to adjust the output of kubectl commands
+•	Besides the jsonpath we can use custom column to adjust the output
+
+
