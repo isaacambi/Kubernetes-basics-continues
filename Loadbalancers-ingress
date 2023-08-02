@@ -1,0 +1,84 @@
+
+adBalancer
+Things are getting complicated (but don’t worry
+Problem
+•	Living in the world of HTTP and HTTPs exposing the service on random nodeport is not that convenient (port :80 and :443).
+•	The port range for nodeport is just 30000–32767.
+•	There is a big problem if the ip address of VM changes.
+•	Load balancer type of service
+•	Its very special and non usable by default .
+•	For each service of this type we will have an externally accessible IP and we can also specify port (most likely 80 or 443).
+•	We need an external load balancer in order to use it.
+•	It’s simple setup for public cloud but hard for local dev.
+•	LoadBalancer problems
+•	It’s just L4 routing (we can route based on ip and port no support for L7 routing).
+•	We need to have unique IP:PORT for each service which we want to expose. This can get expensive having lots of services.
+•	Ingress
+•	Motivation
+•	Ingress solves the problem with l7 load balancing (it provides it).
+•	We can use names based virtual hosting to route traffic.
+•	We can use paths and headers to route traffic.
+•	It exposes only HTTP or HTTPS routes (if we need any other port we should use NodePort).
+•	Ingress controller
+•	Is responsible for monitoring new ingress resources.
+•	For assigning external ip to the ingress by talking to cloud provider or using some external hardware router.
+•	There are a lot of them (third party thing)	:
+o	Nginx is the one I will be demonstrating (it is also used by EKS).
+•	I have no idea what you just said michal
+•	Imagine we have two apps and one domain (michalhucko.com).
+•	We want to serve an api on:
+o	api.michalhucko.com
+•	And we want server a gallery app on:
+o	gallery.michalhucko.com
+•	Using normal load balancer would end up with provisioning 2 ip addresses and won’t solve the problem.
+•	Alternatively we may want to have:
+o	one app at www.michalhucko.com/api
+o	second at www.michalhucko.com/gallery
+•	Things to check
+•	The whole ingress thing is still under development. 
+•	There are lot of controllers which use different annotations to achieve similar things.
+•	It’s always good idea to check docs of tools you will use.
+•	Daemonsets
+Motivation
+•	Sometimes we want to create exactly one pod on each of the node:
+o	E.g. we want to install some drivers on each of the machine (e.g. GPU drivers).
+o	Or we want to update the iptables on each of the nodes (as some of the CNI plugins do).
+•	One way is to specify nodeName field on the pod (this will disable scheduling for that pod as it will be always deployed to the same node).
+o	But this gets complicated with couple of node
+•	What is daemonset
+•	Daemonset spawns exactly one pod per node (by filling the nodeName parameter for us).
+o	that mean scheduler is not handling these pods 
+•	That’s it :).
+•	Jobs
+•	Motivation
+•	Sometimes we want to run a specific code once (or few times).
+•	Example is batch processing of data.
+o	We want to run some processing function on piece of data.
+•	To achieve this we can use Kubernetes Jobs.
+•	Three types of jobs
+ 
+Name	Parallelism	Completitions
+One time job	1	1
+Parallel with fixed competitions	more than 1	more than 1
+ParallelJobs with a work queue	more than 1	1
+
+Things to know about jobs
+•	You can specify number of failed jobs to be kept so you can later inspect the error logs.
+•	You can send indexes to jobs (e.g. if you need to access some window in db .spec.completionMode="Indexed").
+•	CronJobs	
+•	You can create also CronJobs (by specifying schedule and Job template).
+ 
+0 0 * * *	Run every day
+0 * * * *	Run every hour
+0 0 * * 0	Run every sunday
+0 23 * * 1	Run every monday at 23 00
+*/2 * * * *	Run every two minutes
+
+CronJob limitations
+•	Bame must be valid dns with max of 52 characters !!!!
+•	If you have a CronJob and you change it, changes will be effective to new jobs not to the once which were scheduled and are running.
+•	For more refer to the docs.
+
+
+
+
