@@ -1,0 +1,61 @@
+ Pods
+What is Pod? 
+•	Smallest deployable unit of computing in Kubernetes.
+•	It is the application in the cluster.
+•	Example
+o	Imagine we want to deploy nginx into cluster (NGINX is a web server but you think of any other app).
+o	How we do that? 
+Example Nginx
+•	We need a NGINX image (docker image here).
+•	We need cluster.
+•	We need a way to tell cluster to deploy the container as a pod to the cluster.
+•	What really happened?
+•	Kubectl sent request to the kubernetes api server resource which is responsible for handling Pods.
+•	Kube scheduler chose the node where the pod was deployed. 
+o	Run kubectl get po -o wide to check on which node the pod was deployed.
+•	Kubelet tried to get the pods image from the local nodes registry.
+o	Because we are running the nginx for the first time the image is not there.
+•	(If image is not there) kubelet tries to pull the image from default image registry (Dockerhub in this case).
+•	Kubelet runs the container in the pod.
+•	So the pod is a container ? NO!!
+•	Pod is not a container.
+•	Pod can be a container or a set of containers.
+•	Single pod is deployed on a single node (sometimes it makes sense to group containers).
+•	Containers in the pod may share some volumes (file system), hostname, ip address, port space and they share number of Linux namespaces.
+•	Having multiple containers in the same pod is ideal for tightly coupled apps.
+•	Examples for multiple containers in pod
+•	Gyt sync pattern: you have main app in one container and in other container you will run synchronization process which will update some files needed for the main app (e.g. the config of nginx server).
+•	Sidecar logger: you have main app running in one container and the other container is responsible for gathering logs from the main container and sending them to centralised datastore (e.g. logstash).
+•	Sidecar for service mesh: You have main app in one container and the other container is handling networking.
+•	Kubectl usage
+•	We start to notice some patterns
+•	kubectl get namespaces
+•	kubectl get pods
+•	
+•	kubectl delete namespace X
+•	kubectl delete po X
+•	Kubectl commands structure 
+•	$ kubectl [command] [resource] [name] [flags]
+•	What is resource?
+•	I am talking about resources in context of REST API.
+•	Some articles may call those kubernetes objects or kube-api endpoints.
+•	Kubectl commands
+•	get/describe: to get info about some resource (READ).
+•	run/create/apply: to create some new resource (CREATE).
+•	edit/apply/patch: to update some resource (UPDATE).
+•	delete: to remove some resource (DELETE).
+•	Kubernetes resources
+•	pods
+•	namespaces
+•	services
+•	replica sets
+•	daemon sets
+•	stateful sets
+•	deployments
+•	configmaps
+•	secrets
+•	ingresses
+•	and many more which we will cover 
+
+
+
