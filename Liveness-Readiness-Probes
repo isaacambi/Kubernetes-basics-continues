@@ -1,0 +1,66 @@
+esource limits and requests
+•	Organising pods into nodes its like building lego bricks with roof limits.
+•	Kubernetes scheduler is the one responsible for choosing a node for a given pod.
+•	Resource limits and requests helps us to put constraints on pods and their resources.
+•	Problem
+•	Imagine having a pod which we want to schedule.
+•	Which of the given nodes the Pod should be placed?
+•	What is the minimal amount of RAM and CPU that the node needs? 
+•	What if node will have some problem causing it to use way too much resources.
+•	Units in Kubernetes
+•	CPU
+o	“1”  - one vCpu 
+o	“0.5” - one half vCpu
+o	“500m” - 500 milicores of VCPU == 0.5
+•	RAM
+o	1 MB = one Mega bite = 1024KB
+o	1 Mi = one Mebi bite = 1000KiB
+o	1 mB = one Mili bite
+o	1 MB = one Megabite
+•	Resource requests
+•	Specifies what is the minimum resources needed to run the pod:
+o	No nodes with less available resources will be chosen.
+•	Kubernetes guarantees that those resources will be available if scheduled.
+•	We specify it on container level.
+Resource limits
+•	Sets the maximum resources given container can use.
+•	If the container uses more it will be killed.
+•	We specify it on container level.
+Liveness probe
+•	Sometimes the app goes to broken state without crashing.
+•	Liveness probe is the mechanism to detect this state.
+•	Liveness probe is regular check against process which runs.
+•	If it fails pod is restarted.
+Readiness and startup probes
+Startup probe 
+•	Is used to indicate that the app in container has started.
+•	Sometimes apps take time to start and we don’t want to use the app before it’s ready. 
+•	If the startup probe fails Container is killed
+o	Depending on the spec.restartPolicy the pod may be restarted
+•	Same type of probes as liveness can be used with same params.
+•	Must be created in YAML.
+•	Readiness probes
+•	These probes are executed after startup success (and throughout lifecycle).
+•	Helps to indicate if the application is ready.
+•	Request to the app won’t be served until the readiness passes (also liveness probes won’t be executed before success of readiness).
+•	Example use case differences
+•	Imagine having API for serving some ML model
+o	First we need to start the app (it takes some time between 3 to 5 mins). We will create startup probe to check for the startup. For example after startup some file will be located at some path in the container. We need to set big enough period time and retries
+o	After app is deployed it loads some ML model from remote storage before serving the requests. We use the readiness probe to estimate when to start the traffic to pod
+o	Now the traffic is being served but we know there is a chance something wrong can happen on one of those HTTP endpoints. So we set the liveness probe to check for status codes of those endpoints (HTTP probe fails is the status code is above 400).
+•	Important
+•	Kubernetes performs other Health checks outside probes
+o	It checks if the process in container is running
+o	If it has finished with error status code
+o	checks if the ip is available
+o	and more 
+•	This checks are for free and are used to heal the pod 
+•	restartPolicy
+•	Restart policy is used on containers failure.
+•	Use with caution because might end in the chain of restarts (although exponential backoff if used 10s wait 20s wait 40s wait etc.).
+•	Values:
+o	Always (default)
+o	OnFailure
+o	Never
+
+
