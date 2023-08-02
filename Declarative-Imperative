@@ -1,0 +1,80 @@
+arative vs imperative
+Imperative
+•	So far all the communication with kubernetes api server so far was through imperative commands:
+o	kubectl run nginx --image=nginx
+o	kubectl delete ns namespace
+•	Imperative means that we are strictly ordering what to do one by one.
+•	Clear instructions what to do in what order.
+•	Declarative
+•	We define just the end (expected) outcome.
+•	We trust the process.
+•	We just say what we want.
+•	Declarative in Kubernetes
+•	We use kubernetes manifest files (yamls, sometimes I will use the word object). 
+•	We send those manifest files to API server and we leave the work to Kubernetes.
+•	$ kubectl run nginx-pod --image=nginx --port 80
+•	Declarative is the best !!
+•	Imperative leads to a lot of misconfigurations (many times it is hard to replicate correct order of steps, it’s even harder in teams).
+•	Declarative approach leads to single source of truth (the manifest file).
+•	Easy to store in source control.
+•	Easy to collaborate on.
+•	Easy to version.
+•	apiVersion
+•	When we create resources we talk Kubernetes api. Api may support different versions for different resources (e.g. for experimental features of backwards compatibility).
+•	You can always check online the spiversion for different resources.
+•	kind
+•	Is the resource type we want to create (uses always CamelCase).
+•	metadata
+•	Is data about data section.
+•	Name is always mandatory:
+o	Must be a valid dns subdomain !!!!!!
+o	Contain no more than 253 characters.
+o	Contain only lowercase alphanumeric characters, '-' or '.'
+o	Start with an alphanumeric character.
+o	End with an alphanumeric character.
+•	Labels helps to organize kubernetes resources into groups (more about it later).
+•	spec.containers
+•	Its place where we define containers.
+•	In this case we have one container with name and image nginx.
+•	Debugging pods
+•	Why to debug
+•	Sometimes (almost always) code does not work as it supposes to.
+•	Kubernetes provides tools to debug pods.
+•	Types of problems:
+o	Problem with kubernetes deployment.
+o	Problem with the application.
+Problem with Kubernetes
+•	You can always get any resource you think it’s broken.
+•	If you need more information you can describe particular resource by the resource name.
+•	Pod’s Status
+•	Pending: 
+o	Complpex state saying that pod may not be scheduled yet (node has not been chosen).
+o	Or that the containers are not read (you may see status ContainerCreating).
+•	Running:
+o	Scheduled and at least 1 container still running.
+•	Succeed:
+o	All containers ended with OK (pod won’t be restarted).
+•	Failed
+o	All containers are terminated and at least one with failure.
+•	Unknown
+o	Can’t speak to pod (most likely network problem).
+•	Problem with the application
+•	Here Kubernetes allows us to check the application logs with logs command.
+•	We can also exec into the running pod to examine the pod.
+•	Ephemeral pods
+•	Kubernetes pods are designed to be ephemeral
+o	When they are gone they are gone (there is no way to create exactly same pod).
+•	Pods are unique even if they run the same application. 
+•	If you exec into pod and do some changes the changes won’t persist once the pod restart.
+•	Pod restarts are normal and you may not even notice them. 
+•	Use the exec with caution.
+•	Overriding Container command and entrypoint
+•	Problem
+•	Sometimes containers come with binaries which we want to run in different way as the default is.
+•	There is small naming discrepancy between Docker and and Kubernetes in terms of container commands.
+•	Custom pod command
+•	Docker images may come with CMD and ENTRYPOINT set.
+•	You can override this with spec.containers[i].command and . args.
+
+
+
