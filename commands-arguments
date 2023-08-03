@@ -1,0 +1,64 @@
+ /root
+kubectl create -f /root/replicaset-definition-1.yaml
+
+cat /root/replicaset-definition-1.yaml
+
+version:apps/vi not just vi
+
+kubectl explain replicaset
+vi /root/replicaset-definition-1.yaml
+kubectl create -f /root/replicaset-definition-1.yaml
+
+2. Kubectl get rs
+
+3. Kubectl edit rs new-replica-set
+
+COMMANDS AND ARGUMENTS
+
+5. update pod ubuntu-sleeper-3 to sleep for 2000 seconds. Note only make the necessary changes. 
+Do not modiry the name of the pod. Delete and recreate the pod if necessary.
+check 
+
+pod Name: ubuntu-sleeper-3
+command: sleep 2000
+
+solution
+kubectl edit pod ubuntu-sleeper-3 
+kubectl replace --force -f /tmp/kubectl-edit.yaml
+
+6. inspect the file Dockerfile given at /root/webapp-color directory. what command is run at container startup?
+solution
+cat /root/webapp-color/Dockerfile
+[ "python", "app.py" ]
+
+b. Inspect the file Dockerfile given at /root/webapp-color directory. what command is run at container startup?
+solution
+cat /root/webapp-color/Dockerfile
+python app.py ..color red
+
+8. Inspect the two files under directory webapp-color-2. what command is run at container startup?
+Assume the image was created from the Dockerfile in this folder.
+solution
+ls webapp-color-2
+cat webapp-color-2
+cat webapp-color-2/webapp-color-pod.yaml
+Ans = -color green
+
+9. Inspect the two files under directory webapp-color-3 what command is run at container startup? Assume
+the image was created from the Dockerfile in this folder 
+solution
+ls webapp-color-3/
+cat webapp-color-3/Dockerfile
+cat webapp-color-3/webapp-color-pod-2.yaml
+solution
+python app.py --color pink
+
+10. create a pod with the given specifications. By default it displays a blue background. set the given
+command line arguments to change it to green.
+
+pod Name: webapp-green
+image: Kodekloud/webapp-color
+command line argument: --color=green
+solution
+kubectl run webapp-green --image=kodekloud/webapp-color --dry-run=client -o yaml
+kubectl run webapp-green --image=kodekloud/webapp-color --color green
