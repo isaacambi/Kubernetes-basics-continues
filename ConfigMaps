@@ -1,0 +1,49 @@
+onfigMaps in Kubernetes are objects that store configuration data, such as key-value pairs or plain text, separately from application code. 
+They enable easy management of configuration settings for applications running in the cluster, promoting portability and flexibility.
+
+1. update the environment variable on the pod to display a green background. note: Delete and recreate the pod. only make the necessary
+changes. do not modify the name of the pod.
+
+pod Name: webapp-color
+Label Name: webapp-color
+Env: APP_COLOR =green
+solution
+kubectl get pods
+kubectl get pod webapp-color -o yaml>pod.yaml
+then delete current running pod.
+
+kubectl delete pod webapp-color
+vi pod.yaml (to do some modifications)
+go to containers>env>value:green
+kubectl apply -f pod.yaml
+
+7. How many configmaps exist in the default namespace?
+solution
+kubectl get cm = 2
+
+8. Identify the db host from the configmap db-config 
+solution
+kubectl describe cm db-config
+DB-HOST:SQLO1.example.com
+
+9. create a new configmap for the webapp-color Pod. use the spec given below 
+
+ConfigName Name:webapp-config-map
+Data: APP_COLOR = darkblue
+solution
+kubectl create cm webapp-config-map --from-literal=APP_COLOR=darkblue
+
+10. Update the environment variable on the Pod to use the newly created ConfigMap. Note: Delete and recreate the POD.
+only make the necessary changes. do not modify the name of the pod.
+
+a. Pod Name: webapp-color
+b. EnvFrom: webapp-Config-map
+solution
+kubectl get pod
+kubectl delete pod webapp-color
+vi pod.yaml
+kubectl apply -f pod.yaml
+
+the environment variable "APP-COLOR" is going to be set to "webapp-config-map" (this configmap) and is going to reference this 
+specific key "APP-COLOR" in that configmap
+kubectl apply -f pod.yaml
