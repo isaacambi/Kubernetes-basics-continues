@@ -1,0 +1,75 @@
+n Kubernetes, a Security Context is a specification that allows you to define security-related settings for Pods or Containers. 
+These settings control various aspects of security, such as the user and group ID under which the containers run, 
+the filesystem permissions, and the Linux capabilities that the containers can use. 
+The Security Context ensures that your Pods and Containers run with appropriate privileges and restrictions,
+ minimizing potential security risks and enforcing access controls.
+
+Security Contexts can be defined at both the Pod level and the Container level. When defined at the Pod level,
+
+ the settings apply to all Containers within the Pod. However, you can override certain settings at the Container
+ level to provide different security configurations for individual Containers.
+
+Using Security Contexts, you can:
+
+    Run Containers with Non-Root Users:
+    You can specify a non-root user ID and group ID for Containers, which reduces the impact of security
+ breaches and minimizes the privileges that Containers have within the system.
+
+    Control Filesystem Permissions:
+    Security Contexts allow you to set the filesystem permissions for mounted volumes, ensuring proper access controls and read/write restrictions.
+
+    Restrict Linux Capabilities:
+    You can limit the capabilities available to Containers, preventing them from performing potentially dangerous
+ actions that could compromise the system's security.
+
+    Use SELinux and AppArmor Profiles:
+    Kubernetes supports using Security-Enhanced Linux (SELinux) and AppArmor profiles to provide additional security
+ measures and further isolate Containers.
+
+By carefully configuring Security Contexts, you can enhance the security and isolation of your Pods and Containers,
+ making your Kubernetes environment more robust and resistant to potential security threats. 
+It is crucial to understand and utilize Security Contexts appropriately based on the specific 
+security requirements of your applications and deployment scenarios.
+
+1. what is the user used to execute the sleep process within the ubuntu-sleeper pod? in the current (default) namespace.
+solution
+k get pod
+k exec ubuntu-sleeper --whoami
+root
+
+2. Edit the pod ubuntu-sleeper to run the sleep process with the user ID 1010. Note: only make
+the necessary changes. Do not modify the name or image of the pod.
+solution
+k edit pod ubuntu-sleeper
+k replace --force -f /tmp/kubectl-edit-300.yaml
+k exec ubuntu-sleeper --whoami
+whoami: cannot find name for user ID 1010
+
+3. A pod definition file named multipod.yaml is given. with what use are the processes in the web container started?
+the pod is created with multiple containers and security context defined at the pod and container level.
+solution
+ cat multipod.yaml
+web container
+sidecar container
+
+two security contexts available, one at the pod level, the other at the container level. the one at the container 
+level will override the one at the pod level. user is 1002.
+
+4. with what user are the processes in the sidecar container started? the pod is created with multiple containers
+and security context defined at the pod and container level.
+solution
+the sidecar security context is not defined, so it will use that of the pod (1001).
+
+5. Update the pod Ubuntu-sleeper to run as Root user and with the SYS_TIME capability 
+Note: only make the necessary changes. do not modify the name of the pod.
+solution
+k edit pod ubuntu-sleeper
+k replace --force -f /tmp/kubectl-edit.2234.yaml
+
+6. now update the pod to also make use of the NET_ADMIN capability
+note:only make the necessary changes. do not modify the name of the pod.
+solution
+ k edit pod ubuntu-sleeper
+ k replace --force -f /tmp/kubectl 2345.yaml
+
+
