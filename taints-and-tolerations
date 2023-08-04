@@ -1,0 +1,87 @@
+nts and tolerations are concepts used in Kubernetes, an open-source container orchestration platform.
+ They play a crucial role in controlling the placement of pods on nodes within a Kubernetes cluster.
+
+Taints are applied to nodes and represent a restriction on that node's ability to accept certain pods. 
+They are typically used to mark nodes with specific characteristics or limitations, such as reserving 
+certain nodes for specific workloads or preventing certain pods from running on them.
+
+On the other hand, tolerations are applied to pods and indicate that the pod can tolerate specific
+ taints on nodes. When a pod has a toleration for a particular taint, it can still be scheduled on 
+a tainted node despite the taint's restrictions.
+
+In simple terms, taints are like "do not disturb" signs on nodes, while tolerations are like permissions
+ granted to certain pods to ignore those signs and run on the nodes anyway.
+
+This feature is useful in scenarios where you want to segregate workloads, prevent certain pods 
+from running on specific nodes (for resource or security reasons), or when you have special nodes 
+in your cluster that should only be utilized by specific pods. Taints and tolerations enable fine-grained 
+control over pod placement and enhance the overall stability and security of Kubernetes clusters.
+
+1. how many nodes exist on the system? including the controlplane node.
+solution
+kubectl get nodes 
+ans = 2
+
+2. Do any taints exist on node01 node?
+Kubectl describe node node01 | grep -i taints
+taints: none
+
+3. create a taint on node01 with key of spray, value of mortein and effect of NoSchedulel
+solution
+Kubectl taint nodes node01 of spray=mortein:NoSchedule
+Ans = node/node01 tainted
+taints consist of three components: key, value and effect.
+no pods will be schedulled on this node unless they have a toleration for this taint.
+
+4.create a new pod with the nginx image and pod name as mosquito.
+solution
+kubectl run mosquito --image=nginx>mosquito.yaml
+
+5. what is the state of the pod?
+solution
+kubectl get pod = pending
+
+6. why do you think the pod is in a pending state?
+solution
+kubectl describe pod mosquito
+pod cannot tolerate taint.
+
+7. create another pod named bee with the nginx image, which has a toleration set to the taint
+mortein.
+solution
+kubectl run bee --image=nginx --dry-run=client -o yaml
+kubectl run bee --image=nginx --dry-run=client -o yaml> bee.yaml
+cat bee.yaml
+vi bee.yaml
+kubectl create -f bee.yaml
+kubectl get pods
+kubectl get pods --watch
+
+8. notice the bee pod was scheduled on node node01 despite the taint.
+solution
+kubectl get pods -o wide
+
+9. Do you see any taints on controlplane node?
+solution
+kubectl describe node controlplane
+yes:NoSchedule
+
+10. Remove the taint on controlplane which currently has the taint effect of NoSchedule
+solution
+kubectl describe node controlplane
+taints: node-role.kubernetes.io/master:Noschedule-
+k describe node controlplane
+taints=none
+
+11. what is the state of the pod mosquito now
+solution
+kubectl get pods
+Ans=running
+
+12. which node is the pod mosquito now on.
+solution
+kubectl get pods -o wide 
+ans= controlplane
+
+
+
