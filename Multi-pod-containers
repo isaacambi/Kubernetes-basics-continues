@@ -1,0 +1,108 @@
+ONTAINER PODS
+Summary of Multi-Container Pods in Kubernetes:
+
+In Kubernetes, a pod is the smallest and simplest unit in the platform,
+ representing a single instance of a running process in a cluster. It
+ encapsulates one or more containers, shared storage, network resources, 
+
+and configuration settings. While most pods contain a single container,
+ Kubernetes also allows the creation of multi-container pods.
+
+Multi-container pods enable co-located and tightly-coupled containers to work
+ together within the same execution context and share the same resources, such as
+ namespaces and network stack. These containers are scheduled and managed together
+ on the same node, providing benefits like improved communication, resource optimization,
+ and simplified deployment of interconnected services.
+
+Key points about multi-container pods in Kubernetes:
+
+    Shared Network Namespace: All containers within a pod share the same network namespace,
+ meaning they can communicate with each other over localhost. This facilitates seamless
+ interaction between the containers without the need for complex networking configurations.
+
+    Shared Storage Volumes: Multi-container pods can mount shared volumes, allowing data to 
+be exchanged and persisted among the containers. This promotes data consistency and ensures
+ that multiple containers have access to the same data.
+
+    Co-Located Containers: Containers in a multi-container pod run on the same node, reducing
+ network latency and improving overall performance by minimizing inter-pod communication.
+
+    Interdependent Services: Multi-container pods are useful when two or more containers need to
+ work together as part of a single application. For example, a web server container might be paired
+ with a sidecar container handling logging or authentication.
+
+    Shared Lifecycle: Containers within a pod have the same lifecycle. They are created, started,
+ stopped, and terminated together. If one container fails, Kubernetes will attempt to restart the 
+entire pod, ensuring high availability for all containers within the pod.
+
+    Sidecar Pattern: The sidecar pattern is a popular use case for multi-container pods. 
+In this pattern, a main container is paired with one or more sidecar containers that augment
+ the functionality of the main container. For instance, a web server container might have a sidecar 
+container for SSL termination or caching.
+
+Overall, multi-container pods offer greater flexibility and improved management for applications 
+with complex dependencies or complementary functionalities. Kubernetes orchestrates these pods 
+efficiently, making them an essential tool for building scalable, modular, and highly available 
+microservices architectures.
+
+1. identify the number of containers created in the red pod.
+solution
+kubectl get pods
+Ans=3
+k describe pod
+
+2. identify the name of the container runnig on the blue pod.
+solution
+k describe pod blue
+Ans=2
+
+3. create a multi-container pod with 2 containers. use the spec given below
+. if the pod goes into the crashloobackoff then add sleep 1000 in the lemon container.
+solution
+kubectl run yellow --image=busybox --dry-run=client -o yaml
+kubectl run yellow --image=busybox --dry-run=client -o yaml> yellow.yaml
+vi yellow.yaml
+k create -f yellow.yaml
+k describe pod yellow
+
+4. we have deployed an app loging stack in the elastic-stack namespace. inspect it before proceeding with 
+the next set of questions, please wait for all the pods in the elastic-stack namespace to be ready. 
+this can take a few minutes.
+solution
+kubectl get pods -n elastic-stack
+once the pod is in a ready state, inspect the kibana UI using the link above your terminal. there should not
+be any logs for now. we will configure a sidecar container for the application to send logs to Elastic search
+Note: it can take a couple of minutes for the kibana UI to be ready after the Kibana pod is ready. you can inspect
+the kibana logs by running
+kubectl -n elastic-stack logs kibana
+
+6. inspect the app and identify the number of containers in it. it is deployed in the elastic-stack namespace.
+solution
+kubectl describe pod -n elastic-stack
+Ans = 1
+
+7. the application outputs logs to the file /log/app/log. view the logs and try to identify the user having issues
+with login. Inspect the log file inside the pod.
+solution
+kubectl logs app -n elastic-stack
+Ans=5
+
+8. Edit the pod to add a sidecar container to send logs to Elasticsearch. Mount the log volume to the sidecar
+container. only add a new container. Do not modify anything else. use the spec provided below
+Name:app
+container Name:Sidecar
+container image: kodekloud/filebeat-curl
+Volume Mount: log-volume
+Mount Path: /var/log/event-simulator/
+Existing container Name: app
+Existing Container Image: kodekloud/event-simulator
+solution
+kubectl edit pod app -n elastic-stack
+k replace --force -f /tmp/kubectl
+
+9. inspect the kibana UI. you should now see logs appearing in the Discover section. you might have to wait
+for a couple of minutes for the logs to populate. you might have to create an index pattern to list the logs.
+if not sure check this video https://bit.ly/2EXYdhf
+
+
+
