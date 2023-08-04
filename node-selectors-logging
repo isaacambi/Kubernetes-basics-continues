@@ -1,0 +1,94 @@
+DE SELECTORS LOGGING
+Node Selectors:
+
+In the context of container orchestration systems like Kubernetes, 
+a Node Selector is a feature that allows you to specify constraints 
+for scheduling pods onto specific nodes in the cluster. Each node in
+ the cluster can be labeled with key-value pairs, and these labels can
+ be used to match pods with appropriate nodes during the scheduling process. 
+Node selectors help you ensure that certain pods are scheduled only on nodes
+ that meet specific requirements, such as having specific hardware capabilities,
+ software configurations, or other attributes.
+
+For example, if you have nodes with different CPU or GPU capabilities, you can 
+label them accordingly. Then, when you create a pod, you can specify a node selector
+ in its configuration to ensure it runs on a node with the desired resources. 
+This can be useful for optimizing resource utilization or segregating workloads based on requirements.
+
+Logging:
+
+Logging is the practice of recording and storing events, activities, or messages generated 
+by applications, systems, or infrastructure components. It plays a crucial role in monitoring
+ and troubleshooting the health and performance of software applications and systems.
+ In a containerized environment like Kubernetes, logging becomes even more important due
+ to the ephemeral nature of containers and the dynamic nature of the cluster.
+
+Kubernetes provides various mechanisms for logging, and it's essential to establish a robust
+
+ logging strategy for your cluster. Some popular logging approaches include:
+
+    Stdout and Stderr: By default, containers in Kubernetes write their log output to the 
+standard output (stdout) and standard error (stderr) streams. You can access these logs using
+ various Kubernetes commands and tools.
+
+    Kubernetes API: Kubernetes exposes an API for accessing logs programmatically.
+ Developers and administrators can use this API to retrieve logs for specific pods and containers.
+
+    Logging Aggregators: Centralized logging solutions like Elasticsearch, Fluentd, and 
+Kibana (EFK) or Elasticsearch, Logstash, and Kibana (ELK) stacks are commonly used to collect,
+ aggregate, and analyze logs from multiple containers and nodes in the cluster.
+
+    Managed Logging Services: Many cloud providers offer managed logging services that simplify log 
+collection, storage, and analysis. These services often integrate well with Kubernetes clusters running on their platforms.
+
+Proper logging practices help you gain insights into application behavior, detect errors, 
+
+
+
+
+investigate incidents, and monitor the overall health of your infrastructure. It also aids in compliance,
+ performance optimization, and security auditing.
+1. how many labels exist on node node01 
+solution
+kubectl describe node node01
+Ans = 5
+
+2. what is the value set to the label beta.kubernetes.io/arch on node01?
+solution
+Ans=64
+
+3. Apply a label color=blue to node node01
+solution
+kubectl label node node01 color=blue
+kubectl describe node node01
+
+4. create a new deployment name blue with the nginx image and 3 replicas
+solution
+kubectl create deployment blue --image=nginx --replicas=3
+
+5. which nodes can the pods for the blue deployment be placed on?
+Make sure to check taints on both nodes!
+solution
+kubectl describe node node01 | grep -i taints
+taints:none
+same for controlplane node.
+the deployment can be schedulled on both nodes.
+
+6. set node Affinity to the deployment to place the pods on node01 only.
+solution 
+kubectl edit deployment blue
+
+7. which nodes are the pods placed on now?
+kubectl get pods -o wide
+on node01
+
+8. create a new deployment named red with the nginx image and 2 replicas, and ensure it gets placed on the controlplane node only
+use the label -node-role.kubernetes.io/master- set on the controlplane.
+solution
+kubectl describe node controlplane
+kubectl create deployment red --image=nginx --replicas=2 --dry-run=client -o yaml>red.yaml
+vi red.yaml
+k create -f red.yaml
+"affinity" must correspond with "containers"
+
+
