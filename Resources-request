@@ -1,0 +1,39 @@
+esource Requirements
+Scheduller (kube-scheduler) determines the amount of resources needed by a pod and those
+available on the nde. the scheduller will schedule a pod on e.g node2. if no resources are 
+available on all the nodes, the pod goes into a pending stage (insufficient CPUS(3)).
+you can add memory and CPU in the pod-definition.yaml
+throttle cpu (when it tries to exceed its limits), while the pod will be terminated if it exceeds 
+its memory OOM error if it exceeds its memory.
+
+DEFAULT BEHAVIOUR
+this is important because resources available to the public can be used for crypto mining
+which takes a lot of resources. 1 pod can consume all the resources on a node and starve the other
+pods.
+
+LIMIT RANGE
+Resource Quotas: at namespace levels
+1. a pod called rabbit is deployed. identify the CPU requirements set on the pod in the 
+current (default)namespace
+solution
+K describe pod rabbit
+
+2. Delete the rabbit pod. once deleted, wait for the pod to fully terminate.
+solution
+kubectl delete pod rabbit
+
+3. another pod called elephant had ben deployed in the default namespace. if fails to get to
+a running state. inspect this pod and identify the reason why it is not running.
+solution
+Kubectl describe pod elephanat
+OOM killed!
+
+4. the elephant pod runs a process that consumed 15Mi of memory. increase the limit of the elephant pod to 20Mi.
+Delete and recreate the pod if required. Do not modify anything other than the required fields.
+solution
+kubectl get pod -o yaml> elephant.yaml
+kubectl delete pod elephant
+vi elephant.yaml
+ kubectl apply -f elephant.yaml
+
+5. inspect the status of the pod to make sure its running
