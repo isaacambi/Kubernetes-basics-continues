@@ -1,0 +1,91 @@
+NITORING
+a. node level metrics, the number of nodes in the cluster, how many of those
+are healthy.
+b. Performance metrics such as CPU, memory, network and disc utilization.
+c. Pod level metrics such as performance of pods number of pods, CPU, Memory consumption
+we need something to monitor them, store them and provide analytics around this data.
+d. metric server, prometheus, elastic stack, Data dog, dynatrace
+
+METRICS SERVER AND HEAPSTER (DEPRECATED)
+one metric server per cluster.
+in-memory monitoring solution, does not store data on the disc
+- Kubelet: receives instruction from kubernetes api server. runs pods on the nodes.
+-Kubelet also has containerAdvisor (CAdvisor) which receives performance metrics from pods and exposing
+them through the kubelet api to meet the metrics available for the metric server.
+minikube addons enable metrics-server
+git clone https://github.com/kubernetes-incubator/metrics-server.git
+kubectl create -f deploy /1.8
+
+kubectl top node
+kubectl top pod
+
+1. we have deployed a few PODS running workloads. Inspect them. want for the pods to be ready
+before proceeding to the next question.
+solution
+k get pods
+
+2. let us deploy metrics-server to monitor the PODS and nodes. pull the git repository for the deployment files
+solution
+cd kubernetes-metrics-server/
+
+3. Deploy the metrics-server by creating all the components downloaded. Run 
+k create -f
+
+4. it takes a few minutes for the metrics server to start gathering data. run the 
+k top node
+comment and wait for a valid output 
+k top pod
+
+5. identify the node that consumes the most CPU
+solution
+k top node 
+Ans = Controlplane
+
+6. Identify the  pod that consumes the most Memory
+k top pod
+Ans=Rabbit
+
+8. identify the pod that consumes the least CPU
+ans=Lion
+
+LABELS AND SELECTORS
+Labels and selectors allows us to group things together
+
+1. we have deployed a number of PODS. they are labelled with tier.env and bu. 
+how many PODS exist in the dev environment? use the selectors to filter the output.
+solution
+k get pods
+k get pods --selector env=dev
+OR
+k get pods --selector env=dev | wc -l
+k get pods --selector env=dev --no-headers
+k get pods --selector env=dev --no headers | wc -l
+Ans=7
+
+2. How many PODS are in the finance business unit
+solution
+kubectl get pods --selector bu=finance --no-header | wc -l
+Ans=6
+
+3. How many objects are in the prod environment including PODS, Replicasets and any othe objects?
+solution
+k get pods --selector env=prod --no-headers
+k get all --selector env=prod --no-headers 
+k get all --selector env=prod --no-headers | wc -l
+
+4. identify the POD which is part of the prod environment, the finance Bu and of frontend tier?
+solution
+kubectl get all --selector env=prod, bu=finance, tier=frontend
+
+5. A replicaset definition file is given replicaset-definition-1.yaml. try to create the replicaset. there 
+is an issue with the file. try to fix it.
+solution
+cat replicaset-definition-1.yaml
+k create -f replicaset-definition-1.yaml
+selector label does not match template label
+vi replicaset-definition-1.yaml
+k create -f replicaset-definition-1.yaml
+k get rs
+
+
+
