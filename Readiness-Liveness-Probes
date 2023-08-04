@@ -1,0 +1,122 @@
+EADINESS AND LIVENESS PROBES PART TWO
+    Readiness Probes:
+        Purpose: Readiness probes are used to determine if a container is ready 
+to start accepting traffic. It ensures that the container has successfully initialized
+ and is prepared to handle requests.
+        Behavior: If the readiness probe fails (returns an error or a non-success status code),
+ Kubernetes considers the container not ready. The container is temporarily removed from
+ the pool of endpoints that receive traffic from a service. Once the readiness probe starts
+ passing, the container is added back to the pool and begins receiving traffic again.
+        Use Case: Readiness probes are essential for applications that require a certain amount
+ of time to start or have dependencies that must be ready before the application can handle traffic.
+
+    Liveness Probes:
+        Purpose: Liveness probes are used to determine if a container is still running and 
+functioning correctly. It ensures that the application inside the container is running as expected.
+        Behavior: If the liveness probe fails (returns an error or a non-success status code),
+ Kubernetes interprets it as an indication that the container is in a faulty state. In response, 
+Kubernetes will attempt to restart the container to restore it to a healthy state.
+        Use Case: Liveness probes are crucial for applications that might encounter issues during
+ their execution. If an application becomes unresponsive or enters a deadlock state, the liveness
+ probe will trigger a container restart, which can potentially resolve the problem and maintain high availability.
+
+To summarize, Readiness probes are concerned with whether a container is ready to receive traffic, 
+while Liveness probes focus on whether the container is running and functioning correctly. Both types of 
+probes are valuable for ensuring the reliability and stability of applications in a Kubernetes environment.
+
+1. we have deployed a simple web application. Inspect the PODs and service
+solution
+k get pods
+k get service
+
+2. view the app by clicking on the "web portal" link above your terminal. it may take a minute
+or two for the webapp to come up. monitor the status of the POD until it is ready.
+
+3. A test script is provided that sends multiple requests to access the web application. 
+execute the script at /root/curl-test.sh. run the command
+./curl-test.sh
+solution
+./curl-test.sh
+
+4. we just created a new pod to scale the application. view the pods. run the script again and view the results. the application takes 
+80 seconds to warm up.
+solution
+k get pods
+./curl-test.sh
+message from simple-webapp: I am ready! ok
+failed
+failed
+
+5. notice the errors in the output of the script. it looks like whenever the requests
+goes to the first application,(simple-webapp-1) it works but fails when requests is send to simple-web-app-2)
+
+6. update the newly created pod "simple-web app-2 with a readiness probe using the given spec below. do 
+not modify any other properties of the pod.
+
+Pod Name: simple-webapp-2
+Image Name: kodekloude/webapp-delayed-start
+Readiness Probe:httpGet
+Http Probe:/ready
+Http port: 8080
+solution
+k get pod simple-webapp-2-o yaml> webapp2.yaml
+k delete pod simple-webapp-2
+vi webapp2.yaml
+k apply -f webapp2.yaml
+
+7. Run the script again to test the webapp.Notice that none of the requests fail now. though all the request hit the same pod
+Execute the Script at /root/curl-test.sh
+./curl-test.sh
+
+8. Wait for the new pod to be ready and run the test again to see traffic distributed
+between both the pods. execute the script at /root/curl-test.sh. once the simple -webapp-pod-2 is ready the traffic will be distributed to it as 
+well.
+
+9. what would happen if the app inside containers on one of the pods crashes?
+try it by accessing 
+url/crash of the app in your browser or run the crash-app.sh script. then check the status
+of POD. Run the curl-test to see if users are impacted.
+solution
+./crash-app.sh
+
+10. when the application crashes, the container is restarted. during this period the service directs users to the 
+available POD. Since the POD status is not ready.
+
+11. what would happen if the application inside container on one of the PODS freezes?
+try it by accessing url/freeze of the application in your browser or run the freeze-app.sh script
+then check the status of POD. Run the curl-test to see if users are impacted
+solution
+new users are impacted
+
+12. update both pods with a liveness probe using the given spec.
+solution
+k get pod -o yaml>webapp.yaml
+k delete pod --all
+vi webapp.yaml
+
+LOGS
+
+1.  we have deployed a POD hosting an application. Inspect it and wait for it to start.
+solution
+k get pods
+
+2. A user - user 5 - has expressed concerns accessing the application. identify the cause of the issue. 
+inspect the logs of the POD.
+solution
+k logs
+account logged due to many failed attempts.
+
+3. we have deployed a new POD webapp-2-hosting an application. inspect it and wait for 
+it to start.
+solution
+k get pods
+Ans=webapp-2
+
+4. A user is reporting issues while trying to purchase an item. ID the user and the cause 
+of the issue. inspect the logs of the webapp in the POD.
+solution
+k logs webapp-2
+k log webapp-2 simple-webapp
+Ans=USER 30: item is out of stock
+
+
