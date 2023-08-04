@@ -1,0 +1,66 @@
+nitContainers are a concept in container orchestration platforms like Kubernetes. 
+They are small, specialized containers that run and complete before the main application
+ containers start within a pod. Their primary purpose is to perform setup tasks or
+ prepare the environment required for the main containers to run successfully.
+
+InitContainers are particularly useful in scenarios where certain preconditions
+ must be met before the main application starts. For example, they can handle tasks
+ like downloading and configuring external resources, setting up databases, populating
+ configuration files, or waiting for other services to become available.
+
+Each pod in Kubernetes can have one or more InitContainers specified in the pod's
+ configuration. These InitContainers are executed sequentially in the order they
+ are defined, and the main containers are started only after all InitContainers have
+ successfully completed their tasks.
+
+By leveraging InitContainers, developers can ensure that their applications start with
+ a reliable and well-prepared environment, improving the overall reliability and consistency
+ of the application deployment. This allows for better control over the application's startup
+ sequence and provides a way to separate the complexity of certain tasks from the main application logic.
+
+1. identify the pod that has an InitContainer configured.
+solution
+Kubectl get pods
+Kubectl describe pods (all pods) Ans=blue
+
+2. What is the image used by the InitContainer on the blue pod?
+solution
+busybox
+
+3. what is the state of the InitContainer on pod blue.
+solution (Terminated)
+
+4. we just created a new app named purple. how many InitContainers does it have?
+solution
+Kubectl describe pod purple
+Ans = 2
+
+5. what is the state of the pod
+solution
+pending
+
+6. how long after the creation of the pod will the application come up and be available for users
+solution
+sleep 600sec, then 1200sec =30mins.
+
+7. update the pod red to use on InitContainer that uses the busybox image and sleeps for 20seconds.
+solution
+kubectl get pod red -oyaml>red.yaml
+kubectl delete pod red
+vi red.yaml
+kubectl apply -f red.yaml
+
+9. A new app orange is deployed. there is something wrong with it. identify and fix the issue.
+once fixed wait for the application to run before checking solution.
+solution
+kubectl get pods
+orange status = Init:crashloopBackoff
+kubectl describe pod orange
+sleep has too many ees sleep
+k get pod orange -o yaml>orange.yaml
+k delete pod orange
+vi orange.yaml
+edit the sleeeep
+k apply -f orange.yaml
+
+
