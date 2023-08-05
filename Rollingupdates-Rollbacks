@@ -1,0 +1,132 @@
+OLLING UPDATES AND ROLLBACKS
+Recreate strategy:destroy before creating causes downtime for users.
+take down and older version and bring up a newer one one after the other
+this is rolling update(default deployment strategy)
+1. we have deployed a simplle web application. Inspect the PODS and select the services
+wait for the application to fully deploy and view the application using the link called webapp
+solution
+k get pods
+k get deployment
+
+2. what is the corrent color of web application? Access the webapp portal 
+solution = blue
+
+3. run the script name curl-test.sh to send multiple requests to test the web
+application. take a note of the output
+execute the script at 
+/root/curl-test.sh
+solution
+./curl-tesh.sh
+
+4. Inspect the deployment and identify the number of PODS deployed by it.
+solution
+k get deployment
+
+5. what container image is used to deploy the application?
+Ans=Giver
+
+6. inspect the deployment and identify the current strategy 
+solution
+Rolling update strategy
+
+7. if you were to upgrade the application now what would happen?
+solution
+pods are upgraded a few at a time.
+
+8. let us try that upgrade the application by setting the image on the deployment
+to kodekloud/webapp-color:v2. do not delete and re-create the deployment. only set the new image
+for the existing deployment.
+solution
+kubectl edit deployment frontend 
+OR
+k describe deploy frontend
+k set image deployment frontend simple-webapp=kodekloud/webapp-color:v2
+k describe deploy frontend
+
+9. run the script curl-test.sh again. notice the requests now with both the old and newer versions.
+however none of them failed.
+execute the script at /root/curl-test.sh
+blue and green.
+
+10. up to how many PODS can be down for upgrade at a time. consider the current strategy settings and 
+number of PODS -4 
+solution
+25% of 4 is 1
+
+11. change the deployment strategy to Recreate. Delete and re-create the deployment if necessary. only
+update the strategy type for the existing deployment.
+solution
+k edit deployment frontend strategy
+k describe deploy frontend
+
+12. upgrade the application by setting the image on the deployment to kodekloud/webapp-color:v3. Do not
+ delete and recreate the deployment. only set the new image name for the existing deployment.
+solution
+k set image deploy frontend simple-webapp=kodekloud/webapp-color:v3
+
+13. run the script curl-test.sh again. notice the failures, wait for the new application to be ready. notice
+that the requests now do not hit both the versions 
+Execute the script at /root/curl-test.sh
+solution
+./curl-test.sh
+
+KUBERNETES JOBS
+replicasets ensures that pods are always running while jobs ensure that pods run a given task to completion
+
+1. a pod definition file named throw-dice-pod.yaml is given. the image throw-dice randomly returns
+a value between 1 and 6. 6 is considered success and all others are failure. try deploying the POD and view the POD
+logs for the generated number.
+file is located at /root/throw-dice-pod.yaml
+solution
+ls
+throw-dice-pod.yaml
+cat throw-dice-pod.yaml
+cat throw-dice-pod.yaml
+k apply -f throw-dice-pod.yaml
+kubectl get pod
+status is error, this is because it returned a value that was not 6.
+k logs throw-dice-pod
+returns 4
+
+2. create a job using this POD definition file or from the imperative command and look at how many attempts does it take to get a 
+'6'. use the specification given on the below
+vi throw-dice-job.yaml
+kubectl apply -f throw-dice-job.yaml
+k get job
+k describe job
+
+3. Monitor and wait for the job to succeed. throughout this practice test remember to increase
+the 'Backofflimit' to prevent the job from quitting before it succeeds. checkout the documentatio page
+about the Backofflimit property.
+
+4. how many attempts did it take to complete the job. 
+1 succeeded 3 failed: 4 total attempts
+
+5. update the job definition to run as many times as required to get 3 successful 6's.
+Delete existing job and create a new one with the given spec. monitor and wait for the job to succeed
+solution
+k delete -f throw-dice-job.yaml
+vi throw-dice-job.yaml
+k apply -f throw-dice-job.yaml
+k describe job
+
+6. how many attempts did it take to complete this job
+3 succeeded/1 failed : 4 total.
+
+7. that took a while. let us try to speed it up by running up to 3 jobs in parallel. update
+the job definition to run 3 jobs in parallel.
+solution
+k delete -f throw-dice-job.yaml
+vi throw-dice-job.yaml
+k apply -f throw-dice-job.yaml
+k describe job
+3 succeeded/8 failed.
+
+8. notice how quickly that finished.
+9. let us now schedule that job to run at 21:30 hours everyday. create a cronjob for this
+spec
+Cronjob Name: throw-dice-cron-job
+image Name: kodekloud/throw-dice
+Schedule: 30 21 * * * * (minutes, hours, everyday)
+k apply -f throw-dice-cronjob.yaml
+
