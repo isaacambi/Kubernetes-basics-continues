@@ -1,0 +1,215 @@
+YMENT
+1. how many PODS exist on the system? in the current(default) namespace.
+solution
+k get pods
+
+2. how many Replicaset exist on the system
+solution
+k get pods
+
+3. how many Deployments exist on the system? in the current(default) namespace
+k get deployments
+zero
+
+4. how many Deployment exist in the system now? we just created a Deployment. check again.
+solution
+k get deployment
+
+5. how many replicaset exist on the system
+k get rs
+
+6. how many PODS exist on the system now?
+solution
+k get pods
+Ans=4
+
+7. out of all the existing PODS, how many are ready.
+solution
+zero
+
+8. what is the image used to create the pods in the new deployment?
+solution
+k describe pod frontend-deployment-76wf
+busybox 888
+
+9. why do you think the deployment is not ready. 
+image busybox 888 does not exist
+
+10. create a new Deployment using the deployment-definition-1.yaml file located at 
+/root/. there is an issue with the file. so try to fix it.
+ls
+deployment-definition-1.yaml sample.yaml
+k create -f deployment-definition-1.yaml
+error
+vi deployment-definiton-1.yaml
+kind:Deployment, not deployment
+
+11. k create -f deployment-definition-1.yaml
+
+12. create a new Deployment with the below attributed using your own deployment definition file.
+Name:httpd-frontend:
+Replicas:3
+image:http:2.4-alpine
+solution
+k create deployment httpd-frontend --image=httpd:2.4-alpine --replicas=3
+k get deployment
+make sure it goes to a ready state.
+
+NAMESPACE
+1. how many namespaces exist on the system.
+solution
+k get namespaces
+Ans=10
+
+2. how many pods exist in the research namespace? 
+solution
+k get pods --namespace=research
+Ans=2
+k get pods -n = research
+
+3. create a pod in the finance namespace. use the spec given below.
+k run redis --image=redis -n=finance
+k get pods -n=finance
+
+4. which namespace has the blude pod in it?
+solution
+k ger ns
+k get pods --all-namespace
+blue pod is in marketing namespace
+
+5. Access the Blue web application using the link above your terminal. from the UI you can ping other services
+
+6. what DNS name shoud the blue application use to access the database db-service in ints own namespace-marketing
+you can try it in the web application UI. use port 6379.
+solution
+k get pods -n=marketing
+it has the blue app
+k get svc -n marketing
+db-service is available in the marketing ns. if an app is in the same ns with the service, the app can access the service by using its name
+
+7. what DNSS name shoud the blue application use to access the database 'db-service'
+in the 'dev' ns you can try it in the web application UI. use port 6379.
+solution
+k get svc -n=dev
+db-service.dev.svc.cluster.local.
+
+IMPERATIVE COMMANDS!
+--dry-run, --dry-run=client, -o yaml.
+POD
+create an nginx pod
+kubectl run nginx --image=nginx
+
+Generate POD Manifest YAML file (-o yaml).
+Don't create it (--dry-run)
+kubectl run nginx --image=nginx --dry-run=client -o yaml
+
+Deployment
+create a deployment
+kubectl create deployment --image=nginx nginx
+
+Generate Deployment YAML file (-o yaml)
+Don't create it (--dry-run)
+
+Generate Deployment with 4 Replicas
+kubectl create deployment nginx --image=nginx --replicas=4
+
+you can also scale a deployment using the kubectl scale command.
+k scale deployment nginx --replicas =4
+Another way to do this is to save the YAML definition to a file and modify
+
+k create deployment nginx --image=nginx --dry-run=client -o yaml> nginx-deployment.yaml
+you can then update the YAML file with the replicas or any other field before creating the 
+deployment.
+
+SERVICE
+create a service named redis-service of type clusterIP to expose pod redis on port 6379
+
+k expose pod redis --port=6379 --name redis-service --dry-run=client -o yaml
+this will automatically use the pod's labels as selectors).
+OR
+kubectl create service clusterIP redis --tcp=6379:6379 --dry-run=client -o yaml 
+(this will not use the pods labels as selectors, instead it will assume selectors as 
+app=redis. you cannot pass in selects as an option. so it does not work very well if your
+pod has a different label set. so generate the file and modify the selectors before 
+creating the service.
+
+create a service named nginx of type NodePort to expose pod nginx's port 80 port 30080 
+on the nodes:
+
+k expose pod nginx --port=80 --name nginx-service --type=NodePort --dry-run=client -o yaml
+(this will automatically use the pod's label as selector, but you cannot specify the nodeport. you 
+have to generate a definition file and then add the node port in manually before creating the service with the pod.
+Or
+K create service nodeport nginx --tcp=80:80 --node-port=30080 --dry-run=client -o yaml
+(this will not use the pods labels as selectors).
+
+Both the above commands have their own challenges while one of it cannot accept a selector,
+the other cannot accept a nodeport. i would recommend going with the 'kubectl expose' command.
+if, you need to specify a nodeport, generate a definition file using the same command and manually
+input the nodeport before creating the service.
+
+1. Deploy a pod named nginx-pod using the nginx:alpine
+solution
+k run nginx-pod --image=nginx:alpine
+
+2. Deploy a redis pod using the redis:alpine image with the labels set to tier=db. either
+use imperative commands to create the pod with the labels. or else use imperative commnands
+to generate the pod definition file, then add the labels before creating the pod using the file.
+
+pod Name:redis
+image:redis:alpine
+Labels:tier=db
+
+solution
+k run redis --image=redis:alpine --labels="tier=db"
+
+3. create a service redis-service to expose the redis application within the cluster
+on port 6379. use imperative commands. 
+k create service (cannot specify selectors)
+k expose (automatically detects the labels, then use that as selectors for the service)
+k create service (when you need to specify a particular nodeport). if you use the expose command,
+you have to export it to a YAML file and edit it.
+
+k expose redis --port 6379 --name redis-service
+k expose pod redis --port 6379 --name redis-service
+k get service redis-service
+k describe svc redis-service
+
+5. create a deployment named webapp using the image kodekloud/webapp-color with 3 replicas.
+try to use imperative commands only. do not create definition files.
+solution
+k create deployment webapp --image=kodekloud/webapp-color --replicas=3
+k get deployment
+
+6. create a new pod called custom-nginx using the nginx image and expose it on container port
+8080
+solution
+k run custom-nginx --image=nginx --port=8080
+
+7. create a new ns called dev-ns use imperative commands.
+solution
+k create namespace dev-ns
+
+8. create a new deployment called redis-deploy in the dev-ns namespace with the redis image.
+it should have 2 replicas. use imperative commands.
+
+'redis-deploy' created in the 'dev-ns' namespace? replicas:2
+solution
+k create deployment redis-deploy --image=redis --replicas 2 -n dev-ns
+k get deployment -n dev-ns
+
+9. create a pod called httpd using the image httpd:alpine in the default namespace. next, create a service of type
+clusterIP by the same name (httpd). The target port for the service should be 80. try to do this with as few steps as possible
+
+'httpd'pod created with the correct image?
+'httpd' service is of type 'clusterIP'?
+'httpd' service users correct target port 80?
+'httpd' service exposes the 'httpd' pod?
+solution
+k run httpd --image=httpd:alpine --port=80 --expose=true
+k get pod
+k get svc
+k describe svc httpd
+
+
+$
