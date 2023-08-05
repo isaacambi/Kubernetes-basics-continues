@@ -1,0 +1,186 @@
+DS
+1. how many pods exist on the system? in the current(default) namespace
+solution
+k get pods
+results = 0
+
+2. create a new pod with nginx image 
+solution
+k run nginx --image=nginx
+
+3. how many pods are created now? Note: we have created a few more pods. so please
+check again
+solution
+k get pods
+total=4
+
+4. what is the image used to create the new pod
+solution
+k describe pod newpods-list
+Ans=busybox
+
+5. which nodes are these pods placed on? you must look at all the pods in detail
+to figure this out.
+solution
+which nodes are these pods placed on? you must look at all the pods in detail to figure this out
+solution
+node:controlplane
+k describe Node (do for all nodes)
+k get pods -o wide
+
+6. how many containers are part of the pod webapp? Note: we just created a new POD. ignore
+the state of the POD for now.
+solution
+k get pods
+k describe pod webapp
+Ans=2
+
+7. what images are used in the new webapp pod? you must look at all the containers in detail to 
+figure this out.
+solution
+nginx and agentx
+
+8. what is the state of the container agentx in the pod webapp? wait for it to finish the container
+creating state.
+solution
+Error in a waiting State
+
+9. why do you think the container agentx in pod webappp is in error? 
+try to figure it out from the events section of the pod.
+solution
+repository does not exist
+
+10. what does the Ready column in the output of the 
+k get pods command indicate?
+solution
+1/2 means only one container is ready out of the two.
+
+11. Delete the webapp.pod. once deleted, wait for the pod to fully terminate.
+solution.
+k delete pod webapp
+
+12. create a new pod with the name redis and with the image redis123. use a pod-definition
+YAML file. And yes the image name is wrong. 
+solution
+k run redis --image=redis123 --dry-run=client -o yaml
+k run redis --image=redis123 --dry-run=client -o yaml> redis.yaml
+cat redis.yaml
+k create -f redis.yaml
+k get pods (to verify)
+its created, but in an errorImage pull stage because the name of the image is wrong.
+
+13. change the image on this pod to redis. once done, the pod should be in a running state. 
+solution
+cat redis.yaml
+vi redis.yaml
+change redis123 to redis
+k apply -f redis.yaml
+k get pods
+the pod is in a runnig state
+
+REPLICASET
+1. how many pods exist on the system? in the current (default) namespace
+solution
+k get pods
+Ans=no resources
+
+2. how many rs exist on the system? i the current (default) namespace
+solution
+k get replicaset
+No resources found
+
+3. how about now? how many replicaset do you see? we just made a few changes?
+solution
+k get replicaset
+1 created
+
+4. how many PODS are DESIRED in the new-replicaset?
+solution
+k get rs
+Desired=4
+
+5. what is the image used to create the pods in the new-replicaset?
+solution
+k describe replicaset new-replicaset
+Ans=busybox 777
+
+6. how many PODS are READY in the new-replicaset?
+Ans = o
+k get replicaset
+
+7. why do you think the PODs are not ready?
+solution
+k describe pod new-replicaset723
+Ans Repository does not exist. no such image by that name
+
+8. Delete any one of the 4 PODS.
+solution
+k get pods
+k delete pod new-replica-set-wtzt
+
+9. How many pods exist now?
+solution
+k get pods
+Ans=4
+
+10. why are there still PODS, even after deleted 
+solution
+Rs ensures that the desired no always runs.
+
+11. create a Rs using the rs-definition-file located at /root/. there is an issue with the file
+so try to fix it.
+solution
+ls
+rs-definition-1.yaml, rs-definition-2.yaml, sample.yaml
+k create -f /root/replicaset-definition-1.yaml (error)
+cat /root/replicaset-definition-1.yaml
+k explain rs.
+vi /root/replicaset-definition-1.yaml
+k create -f /root/replicaset-definition-1.yaml
+
+12. Fix the issue in the replicaset-definition-2.yaml file and create a Replicaset using it.
+this file is located at /root/.
+solution
+k create -f replicaset-definition-2.yaml
+selector does not match labels
+
+13. Delete the two newly created Rs -1 and Rs-2 
+solution
+k get rs
+k delete rs replicaset-1
+k delete rs replicaset-2
+OR
+fix the original replica set new-replica-set to use the correct busybox image. either delete
+and recreate the Replicaset or update the existing replicaset and then delete all PODs, so new ones with the
+correct image will be created
+solution
+k get rs
+none of the PODs are in a ready stae because the image name is incorrect
+k edit rs new-replica-set
+change image name to just busybox.
+k get pods
+k get rs
+when you update a replicaset, the pods are not automatically recreated. you have to either delete 
+and recreate the entire RS or delete all the pods so that rs will create new pods with the new
+image name.
+k get pods
+k delete pod new-replicaset-vi35 new-replicaset-vw28 new-replicaset-vhvw8
+they are all deleted
+k get pods
+k get rs
+
+15. scale the RS to 5 PODs. use kubectl scale command or edit the replicaset using kubectl edit
+replicaset.
+k scale rs new-replicaset --replicas=5
+k get pods (shows us that a new pod is being added)
+
+16. Now scale the Replicaset down to 2 PODs. use the kubectl command or edit the replicaset
+using kubectl edit replicaset.
+solution
+kubectl edit rs new-replicaset
+set it to 2
+
+
+
+
+$
